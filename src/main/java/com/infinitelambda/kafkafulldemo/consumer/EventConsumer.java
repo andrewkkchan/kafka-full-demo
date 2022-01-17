@@ -3,6 +3,7 @@ package com.infinitelambda.kafkafulldemo.consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +46,16 @@ public class EventConsumer implements Runnable {
 
             }
         });
-        kafkaConsumer.poll(Duration.ofHours(1));
+        while (true) {
+            ConsumerRecords<String, byte[]> consumerRecords = kafkaConsumer.poll(Duration.ofHours(1));
+            consumerRecords.forEach(record -> {
+                log.info("topic : {}", record.topic());
+                log.info("partition : {}", record.partition());
+                log.info("key : {}", record.key());
+                log.info("value : {}", record.value());
+            });
+            kafkaConsumer.commitSync();
+        }
     }
 
 }
