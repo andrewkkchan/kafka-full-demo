@@ -28,11 +28,11 @@ public class KafkaConfig {
     private String bootstrapAddress;
 
     @Bean
-    public ProducerFactory<String, byte[]> producerFactoryForResult() {
+    public ProducerFactory<String, String> producerFactoryForResult() {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, CustomerIdMurmurPartitioner.class);
         config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         config.put(ProducerConfig.RETRIES_CONFIG, 10000000);
@@ -41,12 +41,12 @@ public class KafkaConfig {
 
 
     @Bean
-    public KafkaTemplate<String, byte[]> kafkaTemplateForResult() {
+    public KafkaTemplate<String, String> kafkaTemplateForResult() {
         return new KafkaTemplate<>(producerFactoryForResult());
     }
 
     @Bean
-    public ConsumerFactory<String, byte[]> consumerFactory() {
+    public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "tap-demo-consumer-group-1");
@@ -57,13 +57,13 @@ public class KafkaConfig {
     }
 
     @Bean
-    public Consumer<String, byte[]> consumer() {
+    public Consumer<String, String> consumer() {
         return consumerFactory().createConsumer();
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, byte[]> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConcurrency(1);
         factory.setConsumerFactory(consumerFactory());
         return factory;
