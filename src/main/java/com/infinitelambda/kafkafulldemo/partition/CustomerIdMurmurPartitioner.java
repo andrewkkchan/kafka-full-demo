@@ -15,7 +15,7 @@ import java.util.Map;
 @Component
 @Slf4j
 public class CustomerIdMurmurPartitioner implements Partitioner {
-    private static final BigInteger PARTITION_COUNT = BigInteger.valueOf(100);
+    private static final BigInteger PARTITION_COUNT = BigInteger.valueOf(10);
 
     @Override
     public int partition(String topic, Object key, byte[] keyBytes, Object value, byte[] valueBytes, Cluster cluster) {
