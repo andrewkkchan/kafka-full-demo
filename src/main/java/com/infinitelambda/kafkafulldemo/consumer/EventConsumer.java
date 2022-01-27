@@ -15,8 +15,8 @@ import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 @Component
@@ -28,7 +28,7 @@ public class EventConsumer implements Runnable {
     private final KafkaTemplate<String, String> template;
     private final ExecutorService executorService;
     private final StateHolder stateHolder;
-    private final HashSet<String> processedKeys = new HashSet<>();
+    private final Set<String> processedKeys = new HashSet<>();
 
 
     @PostConstruct
@@ -105,13 +105,13 @@ public class EventConsumer implements Runnable {
                     //keeping some state in the memory
                     //sending back results into output
                     try {
-                        template.send("output-result", record.key(), String.valueOf(stateHolder.getState()));
+                        template.send("output-result", String.valueOf(stateHolder.getState()));
                     } catch (Exception e) {
                         log.error("error found in producing", e);
                     }
                 } catch (BusinessRuleValidationError e) {
                     try {
-                        template.send("output-result", record.key(), e.getMessage());
+                        template.send("output-result", e.getMessage());
                     } catch (Exception pe) {
                         log.error("error found in producing", pe);
                     }
