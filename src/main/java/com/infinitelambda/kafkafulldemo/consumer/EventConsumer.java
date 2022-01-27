@@ -37,7 +37,7 @@ public class EventConsumer implements Runnable {
 
     @Override
     public void run() {
-        kafkaConsumer.subscribe(Collections.singleton("input-topic"), new ConsumerRebalanceListener() {
+        kafkaConsumer.subscribe(Collections.singleton("input-ops"), new ConsumerRebalanceListener() {
             @Override
             public void onPartitionsRevoked(Collection<TopicPartition> collection) {
 
@@ -55,8 +55,11 @@ public class EventConsumer implements Runnable {
                 log.info("partition : {}", record.partition());
                 log.info("key : {}", record.key());
                 log.info("value : {}", record.value());
+                //processing & validate according to business rules
+                //keeping some state in the memory
+                //sending back results into output
                 try {
-                    template.send("output-topic", record.key(), record.value());
+                    template.send("output-result", record.key(), record.value());
                 } catch (Exception e){
                     log.error("error found in producing", e);
                 }
