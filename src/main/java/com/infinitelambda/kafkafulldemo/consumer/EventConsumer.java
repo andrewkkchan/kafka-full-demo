@@ -24,7 +24,7 @@ public class EventConsumer implements Runnable {
     private final org.apache.kafka.clients.consumer.Consumer<String, String> kafkaConsumer;
     private final KafkaTemplate<String, String> template;
     private final ExecutorService executorService;
-    private int result;
+    private Integer result;
 
 
     @PostConstruct
@@ -68,17 +68,22 @@ public class EventConsumer implements Runnable {
                         throw new BusinessRuleValidationError();
                     }
                     char operator = value.charAt(0);
+                    Integer calculatorValue = Integer.valueOf(value.charAt(1));
 
                     if (operator == '+'){
                         //do your addition
-                        result += 2;
+                        result += calculatorValue;
                     } else if (operator== '-'){
                         //do your minus
+                        result -= calculatorValue;
                     } else if (operator=='*'){
                         //do your multiplication
+                        result *= calculatorValue;
                     } else if (operator=='/'){
                         //do your division
+                        result /= calculatorValue;
                     }
+                    System.out.println(result);
                     //keeping some state in the memory
                     //sending back results into output
                     try {
