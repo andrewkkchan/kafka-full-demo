@@ -24,7 +24,7 @@ public class EventConsumer implements Runnable {
     private final org.apache.kafka.clients.consumer.Consumer<String, String> kafkaConsumer;
     private final KafkaTemplate<String, String> template;
     private final ExecutorService executorService;
-    private int result;
+    private int state;
 
 
     @PostConstruct
@@ -48,7 +48,7 @@ public class EventConsumer implements Runnable {
             @Override
             public void onPartitionsAssigned(Collection<TopicPartition> collection) {
                 //seek to the very beginning because this consumer is in memory only
-                for (TopicPartition topicPartition: collection){
+                for (TopicPartition topicPartition : collection) {
                     kafkaConsumer.seek(topicPartition, 0);
                 }
 
@@ -65,30 +65,42 @@ public class EventConsumer implements Runnable {
                     //processing & validate according to business rules
                     String value = record.value();
                     if (value == null || value.isEmpty() || value.equals("q")) {
-                        throw new BusinessRuleValidationError();
+                        throw new BusinessRuleValidationError("Value empty or quit");
                     }
                     char operator = value.charAt(0);
+                    int operand = Integer.parseInt(value.substring(1));
 
-                    if (operator == '+'){
-                        //do your addition
-                        result += 2;
-                    } else if (operator== '-'){
-                        //do your minus
-                    } else if (operator=='*'){
-                        //do your multiplication
-                    } else if (operator=='/'){
-                        //do your division
+                    if (operand <= 0){
+                        // do not take non negative operand
+                        throw new BusinessRuleValidationError("No negative operand");
+                    }
+
+                    if (operator == '+') {
+                        state += operand;
+                    } else if (operator == '-') {
+                        if (operand > state){
+                            throw new BusinessRuleValidationError("Negative result disallowed");
+                        }
+                        state -= operand;
+
+                    } else if (operator == '*') {
+                        state *= operand;
+                    } else if (operator == '/') {
+                        state /= operand;
+                    } else {
+                        //not valid operator
+                        throw new BusinessRuleValidationError("Not valid operator");
                     }
                     //keeping some state in the memory
                     //sending back results into output
                     try {
-                        template.send("output-result", record.key(), String.valueOf(result));
+                        template.send("output-result", record.key(), String.valueOf(state));
                     } catch (Exception e) {
                         log.error("error found in producing", e);
                     }
-                } catch (BusinessRuleValidationError e){
+                } catch (BusinessRuleValidationError e) {
                     try {
-                        template.send("output-result", record.key(), "Business Rule invalid");
+                        template.send("output-result", record.key(), e.getMessage());
                     } catch (Exception pe) {
                         log.error("error found in producing", pe);
                     }
