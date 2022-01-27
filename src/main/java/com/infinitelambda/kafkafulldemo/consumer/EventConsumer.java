@@ -68,16 +68,20 @@ public class EventConsumer implements Runnable {
                         throw new BusinessRuleValidationError();
                     }
                     char operator = value.charAt(0);
+                    int number = Character.getNumericValue(value.charAt(1));
 
                     if (operator == '+'){
                         //do your addition
-                        result += 1;
+                        result += number;
                     } else if (operator== '-'){
                         //do your minus
+                        result -= number;
                     } else if (operator=='*'){
                         //do your multiplication
+                        result *= number;
                     } else if (operator=='/'){
                         //do your division
+                        result /= number;
                     }
                     //keeping some state in the memory
                     //sending back results into output
