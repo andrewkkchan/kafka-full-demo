@@ -68,7 +68,7 @@ public class EventConsumer implements Runnable {
                         throw new BusinessRuleValidationError();
                     }
                     char operator = value.charAt(0);
-                    int number = Character.getNumericValue(value.charAt(1));
+                    int number = Integer.parseInt(value.substring(1));
 
                     if (operator == '+'){
                         //do your addition
