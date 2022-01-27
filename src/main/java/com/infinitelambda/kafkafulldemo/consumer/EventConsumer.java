@@ -15,6 +15,8 @@ import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 
 @Component
@@ -26,6 +28,7 @@ public class EventConsumer implements Runnable {
     private final KafkaTemplate<String, String> template;
     private final ExecutorService executorService;
     private final StateHolder stateHolder;
+    private final HashSet<String> processedKeys = new HashSet<>();
 
 
     @PostConstruct
@@ -63,7 +66,14 @@ public class EventConsumer implements Runnable {
                     log.info("partition : {}", record.partition());
                     log.info("key : {}", record.key());
                     log.info("value : {}", record.value());
+
                     //processing & validate according to business rules
+                    if (processedKeys.contains(record.key())) {
+                        throw new BusinessRuleValidationError("Duplicate message");
+                    } else {
+                        processedKeys.add(record.key());
+                    }
+
                     String value = record.value();
                     if (value == null || value.isEmpty() || value.equals("q")) {
                         throw new BusinessRuleValidationError("Value empty or quit");
