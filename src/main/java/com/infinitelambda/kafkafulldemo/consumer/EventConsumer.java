@@ -1,6 +1,7 @@
 package com.infinitelambda.kafkafulldemo.consumer;
 
 import com.infinitelambda.kafkafulldemo.exception.BusinessRuleValidationError;
+import com.infinitelambda.kafkafulldemo.state.StateHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
@@ -24,7 +25,7 @@ public class EventConsumer implements Runnable {
     private final org.apache.kafka.clients.consumer.Consumer<String, String> kafkaConsumer;
     private final KafkaTemplate<String, String> template;
     private final ExecutorService executorService;
-    private int state;
+    private final StateHolder stateHolder;
 
 
     @PostConstruct
@@ -70,23 +71,23 @@ public class EventConsumer implements Runnable {
                     char operator = value.charAt(0);
                     int operand = Integer.parseInt(value.substring(1));
 
-                    if (operand <= 0){
+                    if (operand <= 0) {
                         // do not take non negative operand
                         throw new BusinessRuleValidationError("No negative operand");
                     }
 
                     if (operator == '+') {
-                        state += operand;
+                        stateHolder.setState(stateHolder.getState() + operand);
                     } else if (operator == '-') {
-                        if (operand > state){
+                        if (operand > stateHolder.getState()) {
                             throw new BusinessRuleValidationError("Negative result disallowed");
                         }
-                        state -= operand;
+                        stateHolder.setState(stateHolder.getState() - operand);
 
                     } else if (operator == '*') {
-                        state *= operand;
+                        stateHolder.setState(stateHolder.getState() * operand);
                     } else if (operator == '/') {
-                        state /= operand;
+                        stateHolder.setState(stateHolder.getState() / operand);
                     } else {
                         //not valid operator
                         throw new BusinessRuleValidationError("Not valid operator");
@@ -94,7 +95,7 @@ public class EventConsumer implements Runnable {
                     //keeping some state in the memory
                     //sending back results into output
                     try {
-                        template.send("output-result", record.key(), String.valueOf(state));
+                        template.send("output-result", record.key(), String.valueOf(stateHolder.getState()));
                     } catch (Exception e) {
                         log.error("error found in producing", e);
                     }
