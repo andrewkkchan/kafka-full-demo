@@ -71,7 +71,7 @@ public class EventConsumer implements Runnable {
 
                     if (operator == '+'){
                         //do your addition
-                        result += 1;
+                        result += 2;
                     } else if (operator== '-'){
                         //do your minus
                     } else if (operator=='*'){
