@@ -36,19 +36,6 @@ services:
     depends_on:
       - zookeeper
 
-  kafka-manager:
-    image: kafkamanager/kafka-manager:3.0.0.4
-    restart: always
-    container_name: kafka-manager
-    hostname: kafka-manager
-    ports:
-      - "9000:9000"
-    depends_on:
-      - zookeeper
-      - kafka1
-    environment:
-      ZK_HOSTS: zookeeper:2181
-
   kafdrop:
     image: obsidiandynamics/kafdrop:3.28.0-SNAPSHOT
     ports:
